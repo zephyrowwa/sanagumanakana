@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 from PIL import Image
-from utils.emotion_utils import detect_faces, predict_emotion, load_model
+from emotion_utils import detect_faces, predict_emotion, load_model
 from huggingface_hub import hf_hub_download
 import torch
 import tempfile
