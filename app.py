@@ -57,7 +57,7 @@ if uploaded_file:
     label, probabilities = predict(model, input_tensor)
     satisfaction = satisfaction_map[label]
 
-    st.markdown(f"### you are feeling: **{label}**")
+    st.markdown(f"### you are feeling/looking: **{label}**")
     st.markdown(f"### you are: **{satisfaction}** while working")
 
     st.subheader("Confidence Scores")
