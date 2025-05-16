@@ -1,6 +1,5 @@
+streamlit
 torch
 torchvision
-streamlit
-opencv-python
+timm
 Pillow
-numpy
