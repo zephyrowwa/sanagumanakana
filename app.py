@@ -42,23 +42,23 @@ def predict(model, input_tensor):
     return class_labels[predicted_class], probs.squeeze().tolist()
 
 # UI
-st.set_page_config(page_title="Emotion Satisfaction Classifier")
-st.title("Facial Emotion → Satisfaction Classifier")
+st.set_page_config(page_title=":D D:")
+st.title("R U Ok? → R U Happy?")
 st.write("Upload an image to classify emotions using a ConvNeXt model.")
 
 uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
     model = load_model()
     input_tensor = preprocess_image(image)
     label, probabilities = predict(model, input_tensor)
     satisfaction = satisfaction_map[label]
 
-    st.markdown(f"### Emotion: **{label}**")
-    st.markdown(f"### Satisfaction Level: **{satisfaction}**")
+    st.markdown(f"### you are feeling: **{label}**")
+    st.markdown(f"### you are: **{satisfaction}** while working")
 
     st.subheader("Confidence Scores")
     st.bar_chart({lbl: prob for lbl, prob in zip(class_labels, probabilities)})
