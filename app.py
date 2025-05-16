@@ -3,10 +3,23 @@ import torch
 import torch.nn.functional as F
 from torchvision import transforms
 from PIL import Image
+import numpy as np
+import cv2
 from timm import create_model
 
 # Emotion class labels (adjust if yours differ)
 class_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
+satisfaction_map = {
+    'angry': 'dissatisfied',
+    'disgust': 'dissatisfied',
+    'fear': 'dissatisfied',
+    'sad': 'dissatisfied',
+    'happy': 'satisfied',
+    'neutral': 'satisfied',
+    'surprise': 'satisfied'
+}
+
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Load ConvNeXt model
 @st.cache_resource
@@ -33,22 +46,41 @@ def predict(model, input_tensor):
     return class_labels[predicted_class], probs.squeeze().tolist()
 
 # UI
-st.set_page_config(page_title="Facial Emotion Recognition - ConvNeXt", layout="centered")
-st.title("Facial Emotion Recognition")
+st.set_page_config(page_title="Emotion to Satisfaction", layout="centered")
+st.title("Facial Emotion Recognition with Satisfaction Mapping")
 st.write("Upload an image to classify emotions using a ConvNeXt model.")
 
 uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_container_width=True)
+    image_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(image_cv, cv2.COLOR_BGR2GRAY)
 
-    model = load_model()
-    input_tensor = preprocess_image(image)
-    label, probabilities = predict(model, input_tensor)
+    # Detect faces
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
-    st.success(f"Predicted Emotion: **{label}**")
+    if len(faces) == 0:
+        st.warning("No face detected.")
+    else:
+        model = load_model()
 
-    st.subheader("Confidence Scores")
-    prob_dict = {label: prob for label, prob in zip(class_labels, probabilities)}
-    st.bar_chart(prob_dict)
+        for (x, y, w, h) in faces:
+            face_img = image.crop((x, y, x + w, y + h))
+            input_tensor = preprocess_image(face_img)
+            label, probabilities = predict(model, input_tensor)
+            satisfaction = satisfaction_map[label]
+
+            # Draw result on image
+            cv2.rectangle(image_cv, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.putText(image_cv, f"{label} → {satisfaction}", (x, y - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
+            # Show details
+            st.success(f"Emotion: **{label}** → Satisfaction: **{satisfaction}**")
+            st.subheader("Confidence Scores")
+            st.bar_chart({lbl: prob for lbl, prob in zip(class_labels, probabilities)})
+
+        # Display result
+        result_img = Image.fromarray(cv2.cvtColor(image_cv, cv2.COLOR_BGR2RGB))
+        st.image(result_img, caption="Detected Face(s) with Emotion & Satisfaction", use_column_width=True)
