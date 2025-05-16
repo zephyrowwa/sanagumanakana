@@ -60,7 +60,7 @@ elif option == "Use Webcam":
 
 # If an image is provided from either method
 if image:
-    st.image(image, caption="Input Image", use_column_width=True)
+    st.image(image, caption="Input Image", use_container_width=True)
 
     model = load_model()
     input_tensor = preprocess_image(image)
