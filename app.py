@@ -13,7 +13,7 @@ face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 # Load model from Hugging Face
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_path = hf_hub_download(repo_id="zephyrowwa/convnxtferhehe", filename="FRconvnext_full(R)(A).pth")
-model = load_model(model_path, device)
+model = load_model(model_path, device, weights_only=True)
 
 st.title("test lmao")
 
