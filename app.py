@@ -42,7 +42,7 @@ def predict(model, input_tensor):
     return class_labels[predicted_class], probs.squeeze().tolist()
 
 # UI
-st.set_page_config(page_title="No I am not :( ")
+st.set_page_config(page_title=" ╜φ°⌂▌╫§╜φ°⌂▌╫§╜φ°⌂▌╫§╜φ°⌂▌╫§╜φ°⌂▌╫§╜φ°⌂▌╫§╜φ°⌂▌╫§╜ ")
 st.title("R U Ok? || R U Happy?")
 st.write("Upload an image to classify emotions using a ConvNeXt model.")
 
