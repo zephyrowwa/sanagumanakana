@@ -1,50 +1,55 @@
 import streamlit as st
 import torch
-import cv2
-import numpy as np
-from PIL import Image
+import torch.nn.functional as F
 from torchvision import transforms
-from load_model import load_model
+from PIL import Image
+from timm import create_model
 
-# Load Haar Cascade
-face_cascade = cv2.CascadeClassifier('haarcascade/haarcascade_frontalface_default.xml')
+# Emotion class labels (adjust if yours differ)
+class_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 
-# Load model
-model = load_model('FRconvnext_full(R)(A).pth')
-device = torch.device('cpu')
+# Load ConvNeXt model
+@st.cache_resource
+def load_model():
+    model = create_model('convnext_tiny', pretrained=False, num_classes=len(class_labels))
+    model.load_state_dict(torch.load("FRconvnext_full(R)(A).pth", map_location='cpu'))
+    model.eval()
+    return model
 
-# Define your emotion classes
-classes = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
+# Preprocess uploaded image
+def preprocess_image(image):
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.5]*3, [0.5]*3)
+    ])
+    return transform(image).unsqueeze(0)
 
-# Image transform
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], 
-                         [0.229, 0.224, 0.225])
-])
+# Predict function
+def predict(model, input_tensor):
+    with torch.no_grad():
+        outputs = model(input_tensor)
+        probs = F.softmax(outputs, dim=1)
+        predicted_class = torch.argmax(probs, dim=1).item()
+    return class_labels[predicted_class], probs.squeeze().tolist()
 
-# App UI
-st.title("Facial Emotion Recognition App")
+# UI
+st.set_page_config(page_title="Facial Emotion Recognition - ConvNeXt", layout="centered")
+st.title("Facial Emotion Recognition")
+st.write("Upload an image to classify emotions using a ConvNeXt model.")
 
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-if uploaded_file is not None:
-    img = Image.open(uploaded_file).convert('RGB')
-    img_np = np.array(img)
-    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
 
-    for (x, y, w, h) in faces:
-        face = img_np[y:y+h, x:x+w]
-        face_pil = Image.fromarray(face).resize((224, 224))
-        input_tensor = transform(face_pil).unsqueeze(0).to(device)
+if uploaded_file:
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        with torch.no_grad():
-            output = model(input_tensor)
-            pred = torch.argmax(output, dim=1).item()
-            emotion = classes[pred]
+    model = load_model()
+    input_tensor = preprocess_image(image)
+    label, probabilities = predict(model, input_tensor)
 
-        cv2.rectangle(img_np, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        cv2.putText(img_np, emotion, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+    st.success(f"Predicted Emotion: **{label}**")
 
-    st.image(img_np, caption="Detected Emotions", use_column_width=True)
+    st.subheader("Confidence Scores")
+    prob_dict = {label: prob for label, prob in zip(class_labels, probabilities)}
+    st.bar_chart(prob_dict)
