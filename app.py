@@ -6,7 +6,7 @@ from PIL import Image
 from timm import create_model
 
 # Emotion class labels (adjust if yours differ)
-class_labels = ['angry', 'disgusted', 'frightened', 'happy', 'sad', 'surprised', 'neutral']
+class_labels = ['angry', 'disgusted', 'frightened', 'happy', 'neutral', 'sad', 'surprised']
 satisfaction_map = {
     'angry': 'dissatisfied',
     'disgusted': 'dissatisfied',
