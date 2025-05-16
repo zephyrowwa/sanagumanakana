@@ -24,7 +24,7 @@ transform = transforms.Compose([
 # Load model from Hugging Face
 @st.cache_resource
 def load_model():
-    model_url = "https://huggingface.co/your-username/your-model-repo/resolve/main/model.pth"
+    model_url = "https://huggingface.co/zephyrowwa/convnxtferhehe/blob/main/FRconvnext_full(R)(A).pth"
     response = requests.get(model_url)
     state_dict = torch.load(BytesIO(response.content), map_location='cpu')
 
