@@ -9,12 +9,12 @@ from timm import create_model
 class_labels = ['angry', 'disgusted', 'frightened', 'happy', 'sad', 'surprised', 'neutral']
 satisfaction_map = {
     'angry': 'dissatisfied',
-    'disgust': 'dissatisfied',
-    'fear': 'dissatisfied',
+    'disgusted': 'dissatisfied',
+    'frightened': 'dissatisfied',
     'sad': 'dissatisfied',
     'happy': 'satisfied',
     'neutral': 'satisfied',
-    'surprise': 'satisfied'
+    'surprised': 'satisfied'
 }
 
 # Load ConvNeXt model
@@ -42,8 +42,8 @@ def predict(model, input_tensor):
     return class_labels[predicted_class], probs.squeeze().tolist()
 
 # UI
-st.set_page_config(page_title=":D D:")
-st.title("R U Ok? → R U Happy?")
+st.set_page_config(page_title="No I am not :( ")
+st.title("R U Ok? || R U Happy?")
 st.write("Upload an image to classify emotions using a ConvNeXt model.")
 
 uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
