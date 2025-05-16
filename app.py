@@ -11,8 +11,7 @@ class_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral
 # Load ConvNeXt model
 @st.cache_resource
 def load_model():
-    model = create_model('convnext_tiny', pretrained=False, num_classes=len(class_labels))
-    model.load_state_dict(torch.load("FRconvnext_full(R)(A).pth", map_location='cpu'))
+    model = torch.load("FRconvnext_full(R)(A).pth", map_location='cpu', weights_only=False)
     model.eval()
     return model
 
